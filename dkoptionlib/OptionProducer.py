@@ -46,7 +46,8 @@ class OptionProducer:
         res = Option(symbol_pair,
                      strike,
                      expired_time,
-                     otype)
+                     otype,
+                     name=contract_name)
         
         # dealing sigma
         res.sigma_set(sigma)
