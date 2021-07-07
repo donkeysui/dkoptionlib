@@ -18,10 +18,10 @@ import pandas as pd
 import time
 from matplotlib import pyplot as plt
 
-test_options_list = [#['btc-210702-35000-C',0.95,-.15],
-                    # ['btc-210702-35000-P',0.95,-.15],
-                     ['btc-210924-17500-P',0.9,3],
-                     ['btc-210924-70000-C',0.9,1],
+test_options_list = [['btc-210709-35000-C',0.75,-.15],
+                     ['btc-210709-35000-P',0.75,-.15],
+                     ['btc-211231-18000-P',0.99,3],
+                     ['btc-211231-70000-C',0.99,1],
                      ]
 
 main = Manager()
@@ -46,7 +46,7 @@ next_day_pnl_hedged = next_day_pnl + futures_pnl
 # choose a specific position to hedge
 
 roots = find_roots(next_day_pnl_hedged)
-new_roots = find_new_roots(roots, next_day_pnl_hedged, donk=0.75)
+new_roots = find_new_roots(roots, next_day_pnl_hedged, donk=0.70)
 
 new_roots_pnls = []
 
@@ -57,11 +57,16 @@ futures_pnl_to_fix = futures_pnl_generate(pd.Series(new_roots), -delta, hedged_p
 new_roots_hedged_pnls = futures_pnl_to_fix - init_price
 
 atm_pnl = straddle_pnl_generate(np.array(new_roots), hedged_price, 1, 1200)
+
 hedged_amount = (new_roots_hedged_pnls / atm_pnl).mean()
+atm_all_pnl = straddle_pnl_generate(calculate_time_range, 
+                                    hedged_price, 
+                                    hedged_amount,
+                                    1200
+                                    )
 
-
-atm_options_list = [['btc-210709-35000-C',0.95, -0.02226],
-                    ['btc-210709-35000-P',0.95, -0.02226]]
+atm_options_list = [['btc-210709-35000-C',0.95, hedged_amount],
+                    ['btc-210709-35000-P',0.95, hedged_amount]]
 
 expired_time = time.time() + 86400
 
@@ -72,7 +77,7 @@ straddle_position.price_set(35000)
 for option in straddle_position.position:
     option[0].expired_set(expired_time)
     
-res, new_delta = straddle_position.plot_time_pass(86200,35000)
+res, new_delta = straddle_position.plot_time_pass(86300,35000)
 
 
 

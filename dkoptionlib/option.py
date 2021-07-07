@@ -12,6 +12,7 @@ import time
 import scipy.stats as sps
 from numpy import exp, log, sqrt
 
+n = sps.norm.pdf
 N = sps.norm.cdf
 
 class Futures:
@@ -38,6 +39,8 @@ class Option:
         self.now_time = time.time()
         self.name = name
         
+        self.kurt = 4
+        
     def __repr__(self):
         return '{0} | vol:{1}% | strike:{2} | type:{3}'.format(self.symbol,
                                                 self.sigma*100,
@@ -55,6 +58,7 @@ class Option:
                 'theta':self.__theta(price),
                 'price':self.__price(price),
                 'new_price':self.__new_price(price),
+                'kurt_price':self.__kurt(price)
                 }
         
     # - utils -
@@ -141,6 +145,23 @@ class Option:
         prob_density = np.e ** -(d1**2/2) / np.sqrt(2*np.pi)
         vega = price * prob_density * self.__tau()**0.5
         return vega
+    
+    def __kurt(self, price=None, kurt=None):
+        if not kurt:
+            kurt = self.kurt
+        if not price:
+            price = self.price
+            
+        s = price
+        sqrt_t = self.__tau()**0.5
+        d = self.__d()[0]
+        sigma = self.sigma
+        
+        Q4 = ((1/24) * s * sigma * sqrt_t * ((
+              d**2 - 1 - 3*sigma * sqrt_t * (d - sigma*sqrt_t)
+              ) * n(d) + sqrt_t**3*sigma**3*N(d)))
+        
+        return Q4 * (kurt - 3)
     
     def __price(self,price=None):
         if not price:
