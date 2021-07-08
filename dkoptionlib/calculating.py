@@ -18,10 +18,10 @@ import pandas as pd
 import time
 from matplotlib import pyplot as plt
 
-test_options_list = [['btc-210709-35000-C',0.75,-.15],
-                     ['btc-210709-35000-P',0.75,-.15],
-                     ['btc-211231-18000-P',0.99,3],
-                     ['btc-211231-70000-C',0.99,1],
+test_options_list = [#['btc-210709-35000-C',0.75,-.15],
+                     #['btc-210709-35000-P',0.75,-.15],
+                     ['btc-210924-18000-P',0.94,0.5],
+                     ['btc-210924-70000-C',0.94,0.2],
                      ]
 
 main = Manager()
@@ -29,7 +29,7 @@ main.read_tuple(test_options_list)
 main.price_set(35000)
 
 hedged_price = 35000
-calculate_time_range = np.arange(30000,40000,100)
+calculate_time_range = np.arange(30000,40000,10)
 time_pass = 86400
 
 # init position price
@@ -37,7 +37,7 @@ time_pass = 86400
 init_price = main.greeks(hedged_price)['price']
 
 # calculate next
-next_day_pnl, delta = main.plot_time_pass(time_pass, hedged_price)
+next_day_pnl, delta = main.plot_time_pass(time_pass, hedged_price,  calculate_time_range)
 
 # hedge delta from futures
 futures_pnl = futures_pnl_generate(calculate_time_range, -delta, hedged_price)
@@ -46,7 +46,7 @@ next_day_pnl_hedged = next_day_pnl + futures_pnl
 # choose a specific position to hedge
 
 roots = find_roots(next_day_pnl_hedged)
-new_roots = find_new_roots(roots, next_day_pnl_hedged, donk=0.70)
+new_roots = find_new_roots(roots, hedged_price, donk=0.70)
 
 new_roots_pnls = []
 
@@ -64,9 +64,10 @@ atm_all_pnl = straddle_pnl_generate(calculate_time_range,
                                     hedged_amount,
                                     1200
                                     )
+hedged_amount = -0.012
 
-atm_options_list = [['btc-210709-35000-C',0.95, hedged_amount],
-                    ['btc-210709-35000-P',0.95, hedged_amount]]
+atm_options_list = [['btc-210711-35000-C',0.95, hedged_amount],
+                    ['btc-210711-35000-P',0.95, hedged_amount]]
 
 expired_time = time.time() + 86400
 
@@ -77,7 +78,7 @@ straddle_position.price_set(35000)
 for option in straddle_position.position:
     option[0].expired_set(expired_time)
     
-res, new_delta = straddle_position.plot_time_pass(86300,35000)
+res, new_delta = straddle_position.plot_time_pass(86300,35000, calculate_time_range)
 
 
 

@@ -160,18 +160,16 @@ def find_roots(List):
                 res.append(List.index[i+1])
     return res
 
-def find_new_roots(old_roots, List, donk=0.75):
+def find_new_roots(old_roots, price, donk=0.75):
     
     if not len(old_roots) == 2:
         raise ValueError('old_roots amount->({}) wrong'.format(len(old_roots)))
         
-    old_roots_distance = max(old_roots) - min(old_roots)
-    mid_point = np.mean(old_roots)
+    new_radius = abs(np.array(old_roots) - price).mean() * donk
+    return [price - new_radius,
+            price + new_radius]
     
-    return [mid_point - old_roots_distance * donk / 2,
-            mid_point + old_roots_distance * donk / 2]
-
-        
+    
 if __name__ == '__main__':
     
     a = Manager()
